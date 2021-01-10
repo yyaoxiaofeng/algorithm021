@@ -104,18 +104,60 @@ class Solution:
 #牛顿迭代法
 class Solution:
     def mySqrt(self, x: int) -> int:
-        r = x
-        while r*r >x:
-            r = (r + x/r) /2
-
-        return r
+        if x <0:
+            raise Exception("请输入一个正数")
+        if x ==0:
+            return 0
+        cur = 1
+        while True:
+            pre = cur
+            cur = (cur + x/cur)/2
+            if abs(cur-pre) <1e-6:
+                return int(cur)
 
 
 ```
 
-367
+#### [367. 有效的完全平方数](https://leetcode-cn.com/problems/valid-perfect-square/)
 
-```
+```python
+#二分法
+class Solution:
+    def isPerfectSquare(self, num: int) -> bool:
+        if num == 0:
+            return False
+        if num ==1:
+            return True
+        left,right = 1,num//2
+        while left < right:
+            mid = left +(right -left)/2
+
+            if mid*mid == num:
+                return True
+            elif mid*mid >num:
+                right = mid
+            else:
+                left = mid
+            if int(left) == int(right)  and int(left) * int(right) != num:
+                return False
+#或者下面的写法：
+class Solution:
+    def isPerfectSquare(self, num: int) -> bool:
+        if num == 0:
+            return False
+        if num == 1:
+            return True
+        left,right = 2,num//2
+        while left <= right:
+            mid = left +(right -left)//2
+            print(left,mid,right)
+            if mid*mid == num:
+                return True
+            elif mid*mid >num:
+                right = mid-1
+            else:
+                left = mid+1
+        return False
 
 ```
 
@@ -185,19 +227,44 @@ class Solution:
         return res
 ```
 
-874
+#### [874. 模拟行走机器人](https://leetcode-cn.com/problems/walking-robot-simulation/)
 
-```
+```python
+class Solution:
+    def robotSim(self, commands: List[int], obstacles: List[List[int]]) -> int:
+        obstacles = set(map(tuple,obstacles))
+        ans,x,y,i = 0,0,0,0
+        dx = (0,1,0,-1)
+        dy = (1,0,-1,0)
+     
+        for cmd in commands:
+            if cmd == -2:
+                i = (i+3)%4  #左转
+            elif cmd == -1:
+                i = (i+1)%4  #又转
+            else:
+                while cmd and (x+dx[i],y+dy[i]) not in obstacles:
+                    x +=dx[i]
+                    y +=dy[i]      #贪心算法的体现,一步一步走
+                    cmd -=1
+            ans = max(ans,x*x+y*y)
+        return ans
 
+
+
+#小技巧：
+#list[]是不能直接放在set中的，是需要先将list转化为tuple()然后才可以使用set的
+#转化方法如下：
+#map(tuple,list)
 ```
 
 #### [127. 单词接龙](https://leetcode-cn.com/problems/word-ladder/)
 
 ```python
-#BFS
+#BFS 最短路径问题都可以使用BFS来解决
 class Solution:
     def ladderLength(self, beginWord: str, endWord: str, wordList: List[str]) -> int:
-        st = set(wordList)
+        st = set(wordList)    #将list放进set中，可提升访问速度
         if endWord not in st:
             return 0
         queue = collections.deque()
@@ -217,6 +284,66 @@ class Solution:
                         queue.append((temp,step+1))
                         visited.add(temp)
         return 0
+#双向BFS(第一次没看懂)
+class Solution:
+    def ladderLength(self, beginWord: str, endWord: str, wordList: List[str]) -> int:
+        word_set = set(wordList)
+        if len(word_set) == 0 or endWord not in word_set:
+            return 0
+
+        if beginWord in word_set:
+            word_set.remove(beginWord)
+
+        visited = set()
+        visited.add(beginWord)
+        visited.add(endWord)
+
+        begin_visited = set()
+        begin_visited.add(beginWord)
+
+        end_visited = set()
+        end_visited.add(endWord)
+
+        word_len = len(beginWord)
+        step = 1
+        # 简化成 while begin_visited 亦可
+        while begin_visited and end_visited:
+            # 打开帮助调试
+            # print(begin_visited)
+            # print(end_visited)
+
+            if len(begin_visited) > len(end_visited):
+                begin_visited, end_visited = end_visited, begin_visited
+
+            next_level_visited = set()
+            for word in begin_visited:
+                word_list = list(word)
+
+                for j in range(word_len):
+                    origin_char = word_list[j]
+                    for k in range(26):
+                        word_list[j] = chr(ord('a') + k)
+                        next_word = ''.join(word_list)
+                        if next_word in word_set:
+                            if next_word in end_visited:
+                                return step + 1
+                            if next_word not in visited:
+                                next_level_visited.add(next_word)
+                                visited.add(next_word)
+                    word_list[j] = origin_char
+            begin_visited = next_level_visited
+            step += 1
+        return 0
+
+
+if __name__ == '__main__':
+    beginWord = "hit"
+    endWord = "cog"
+    wordList = ["hot", "dot", "dog", "lot", "log", "cog"]
+
+    solution = Solution()
+    res = solution.ladderLength(beginWord, endWord, wordList)
+    print(res)
 ```
 
 #### [200. 岛屿数量](https://leetcode-cn.com/problems/number-of-islands/)
@@ -262,28 +389,35 @@ class Solution:
 #DFS
 class Solution:
         def updateBoard(self, board: List[List[str]], click: List[int]) -> List[List[str]]:
-            direction = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, 1), (-1, -1), (1, -1))
+            posion =((-1,1),(0,1),(1,1),(-1,0),(1,0),(-1,-1),(0,-1),(1,-1))
+            
             if board[click[0]][click[1]] == 'M':
-                board[click[0]][click[1]] = 'X'
+                board[click[0]][click[1]] = "X"
                 return board
-            self.m,self.n = len(board), len(board[0])
-            def check(i, j):
-                cnt = 0
-                for x,y in direction:
-                    x, y = x + i, y + j
-                    if 0 <= x < self.m and 0 <= y < self.n and board[x][y]=='M':
-                        cnt += 1
-                return cnt    
-            def dfs(i, j):
-                cnt = check(i, j)
-                if not cnt:
-                    board[i][j] = 'B'
-                    for x, y in direction:
-                        x, y = x + i, y + j
-                        if  0 <= x < self.m and 0 <= y < self.n and board[x][y]=='E': dfs(x, y)
-                else: board[i][j] = str(cnt)
+            m,n = len(board),len(board[0])
+            def check(i,j):    #统计一个点周围的雷数
+                cnt =0
+                for x,y in posion:
+                    x,y = x+i,y+j
+                    if 0 <= x < m and 0 <= y < n and board[x][y] == 'M':
+                        cnt +=1
+                return cnt
+            def dfs(i,j):
+                cnt = check(i,j)
+                if not cnt:   #如果点击点周围没有雷，将这个点置B,然后使用递归
+                    board[i][j] = "B"
+                    for x,y in posion:
+                        x,y = x+i,y+j
+                        if 0<= x <m and 0<= y <n and board[x][y] == 'E':
+                            dfs(x,y)
+                else:
+                    board[i][j] = str(cnt)  #如果点击点周围有雷，就将雷数显示在这里
+
             dfs(click[0],click[1])
             return board
+
+
+
 ```
 
 #### [55. 跳跃游戏](https://leetcode-cn.com/problems/jump-game/)
@@ -303,10 +437,16 @@ class Solution:
         return endreachable == 0
 ```
 
-33
+#### [33. 搜索旋转排序数组](https://leetcode-cn.com/problems/search-in-rotated-sorted-array/)
 
-```
+```python
+1.暴力，将数组还原（O(log)）--》升序--》二分（O(logn)）
 
+
+2.正解：二分查找
+a.单调
+b.边界
+c.index访问
 ```
 
 74
@@ -390,5 +530,42 @@ class Solution:
         return -1 if not q else q[0][1]
 
 
+```
+
+#### [1046. 最后一块石头的重量](https://leetcode-cn.com/problems/last-stone-weight/)
+
+```python
+#排序
+class Solution:
+    def lastStoneWeight(self, stones: List[int]) -> int:
+        if len(stones) ==1:
+            return stones[0]
+        stones.sort()
+
+        while len(stones) >1:
+            i = stones[-1]
+            j = stones[-2]
+            stones.pop()
+            stones.pop()
+
+            if i !=j:
+                stones.append(i-j)
+                stones.sort()
+            if len(stones) == 0:
+                return 0
+            if len(stones) ==1:
+                return stones[0]
+#优先队列
+class Solution:
+    def lastStoneWeight(self, stones: List[int]) -> int:
+        stones = [-l for l in stones]   #默认heapq构造的是小顶堆，为了得到大顶堆，需要转换下符号
+        heapq.heapify(stones)
+        while len(stones) >=2:
+            i = heapq.heappop(stones)*(-1)
+            j = heapq.heappop(stones)*(-1)
+            if i != j:
+                heapq.heappush(stones,(j-i))
+        return heapq.heappop(stones)*(-1) if stones else 0
+            
 ```
 

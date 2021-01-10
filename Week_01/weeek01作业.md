@@ -30,6 +30,7 @@ class Solution:
 
 ```python
 #预先定义一个字典和长度为1的stack,对输入字符串做循环，如果是值是左括号，做入栈操作，否则做出栈操作，将出栈元素在字典中的value与当前元素做对比，如果相等不做任何操作，如果不等，返回False,这样循环结束的时候再判断一下栈中元素是否都释放了。
+#方法1
 class Solution:
     def isValid(self, s: str) -> bool:
         dic = {'{': '}',  '[': ']', '(': ')', '?': '?'}
@@ -40,12 +41,12 @@ class Solution:
             elif dic[stack.pop()] != c: 
                 return False 
         return len(stack) == 1
-    
+#方法2    
 class Solution:
     def isValid(self, s: str) -> bool:
-        dic = {')':'(',']':'[','}':'{'}
+        dic = {')':'(',']':'[','}':'{'}   
         stack = []
-        for i in s:
+        for i in s:      #i代表右括号，dic[i]代表左括号，遇到右括号要与栈顶元素相比，遇到左括号就追加到栈中
             if stack and i in dic:
                 if stack[-1] == dic[i]: stack.pop()
                 else: return False
@@ -53,6 +54,22 @@ class Solution:
             
         return not stack
 
+ #方法3   
+class Solution:
+    def isValid(self, s: str) -> bool:
+        if len(s) <2:
+            return False
+        dic = {')':'(',']':'[','}':'{'}
+        stack =[]
+        for i in s:
+            if stack and i in dic:
+                if stack[-1] == dic[i]:
+                    stack.pop()
+                else:
+                    return False
+            else:
+                stack.append(i)
+        return True if not stack else False   
 
 ```
 
@@ -165,5 +182,146 @@ class Solution:
                 p1 -= 1
             p -=1
         nums1[:p2+1] = nums2[:p2+1]
+```
+
+#### [283. 移动零](https://leetcode-cn.com/problems/move-zeroes/)
+
+```python
+#将非零的移动到前面，后面的全部置零
+class Solution:
+    def moveZeroes(self, nums: List[int]) -> None:
+        """
+        Do not return anything, modify nums in-place instead.
+        """
+        j = 0
+        for i in range(len(nums)):
+            if nums[i] !=0:
+                nums[j] = nums[i]
+                j +=1
+        while j<=i:
+            nums[j] =0
+            j +=1
+        return nums
+
+
+#双指针法，j代表数组索引（指针1），i代表j前零的个数，j-i（第二个指针）就是j前的第一个零，然后将两个值交换
+class Solution:
+    def moveZeroes(self, nums: List[int]) -> None:
+        """
+        Do not return anything, modify nums in-place instead.
+        """
+        i=0
+        for j in range(len(nums)):
+            if nums[j] == 0:
+                i +=1
+            else:
+                nums[j],nums[j-i] = nums[j-i],nums[j]
+        return nums
+        
+```
+
+#### [70. 爬楼梯](https://leetcode-cn.com/problems/climbing-stairs/)
+
+```爬楼梯
+#动态规划
+class Solution:
+    def climbStairs(self, n: int) -> int:
+        i,j,k =0,0,1
+        for m in range(1,n+1):
+            i =j
+            j =k
+            k =i+j
+        return k
+
+```
+
+#### [15. 三数之和](https://leetcode-cn.com/problems/3sum/)
+
+```python
+#排序+双指针
+class Solution:
+    def threeSum(self, nums: List[int]) -> List[List[int]]:
+        
+        ans =[]
+        nums.sort()
+        n = len(nums)
+        if not nums or n<3:
+            return []
+        for i in range(n):
+            if i>0 and nums[i]==nums[i-1]:  #去重，注意1>0，是为了避免[0,0,0]这个特殊情况
+                continue
+            j =i+1   #左指针
+            k =n-1   #右指针
+            while j<k:
+                if nums[i]+nums[j]+nums[k] == 0:
+                    ans.append([nums[i],nums[j],nums[k]])
+                    while j<k and nums[j] ==nums[j+1]:  #去重
+                        j +=1
+                    while j<k and nums[k] ==nums[k-1]:  #去重
+                        k -=1
+                    j +=1
+                    k -=1
+                elif nums[i]+nums[j]+nums[k] >0:
+                    k -=1
+                else:
+                    j +=1
+        return ans
+```
+
+#### [206. 反转链表](https://leetcode-cn.com/problems/reverse-linked-list/)
+
+```python
+#迭代法
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, x):
+#         self.val = x
+#         self.next = None
+
+class Solution:
+    def reverseList(self, head: ListNode) -> ListNode:
+        cul,pre = None,head
+        while pre:
+            t = pre.next
+            pre.next = cul
+            cul = pre
+            pre = t
+        return cul
+ 
+或者双指针法（一般链表问题都可以使用双指针法来解决）：
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, x):
+#         self.val = x
+#         self.next = None
+
+class Solution:
+    def reverseList(self, head: ListNode) -> ListNode:
+        if not head or not head.next:
+            return head
+        pre,cul,nextnode = None,head,head.next
+        while cul != None:
+            nextnode = cul.next //nextNode 指向下一个节点,保存当前节点后面的链表。
+            cul.next = pre     //将当前节点next域指向前一个节点   null<-1<-2<-3<-4
+            pre = cul          //preNode 指针向后移动。preNode指向当前节点。
+            cul = nextnode     //curNode指针向后移动。下一个节点变成当前节点
+        return pre
+        
+        
+#递归法
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, x):
+#         self.val = x
+#         self.next = None
+
+class Solution:
+    def reverseList(self, head: ListNode) -> ListNode:
+        if not head or not head.next:
+            return head
+        cul = self.reverseList(head.next)
+        head.next.next = head
+        head.next =None    #.next可以理解为。。。指针，比如：head.next=None可以理解为head的指针指向None
+        return cul         #head.next.next=head可以理解为head.next的指针指向head
 ```
 
