@@ -227,6 +227,29 @@ class Solution:
         second= dp2[-1]
         print(first,second)
         return(max(first,second))
+    
+ #双指针法：
+class Solution:
+    def rob(self, nums: List[int]) -> int:
+        if not nums:
+            return 0
+        if len(nums) ==1:
+            return nums[0]
+        #取第一个元素
+        pre1,now1 = 0,0
+        for i in range(len(nums)-1):
+            pre1,now1 = now1,max(pre1+nums[i],now1)
+        ans1 = now1 
+        
+
+        #不去第一个元素
+        pre2,now2 = 0,0
+        for i in range(1,len(nums)):
+            pre2,now2 = now2,max(pre2+nums[i],now2)
+        ans2 = now2
+
+        return max(ans1,ans2) 
+
 ```
 
 #### [121. 买卖股票的最佳时机](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/)
