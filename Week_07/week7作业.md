@@ -18,7 +18,7 @@ class Trie:
         """
         node = self.root
         for char in word:
-            node =node.setdefault(char,{})  #setdefault实现put和get两个功能，如果key为空的话，就拿出来，不然的话就可以直接取，循环走完，九八所有单词全部加到字典树node里面
+            node =node.setdefault(char,{})  #setdefault实现put和get两个功能，如果key为空的话，就拿出来，不然的话就可以直接取，循环走完，就把所有单词全部加到字典树node里面
         node[self.end_of_word] =self.end_of_word   #最后再加一个标志位，end_of_word,否则无法区分是只包含前缀还是包含整个单词
 
     def search(self, word: str) -> bool:
@@ -134,7 +134,92 @@ def findWords(self, board: List[List[str]], words: List[str]) -> List[str]:
 ```python
 1.暴力
 2.搜索
-3.
+3.DFS
+找到一个省份i,然后对他相邻且没有访问过的省份使用dfs查找。
+class Solution:
+    def findCircleNum(self, isConnected: List[List[int]]) -> int:
+        nums = len(isConnected)
+        visited = set()
+        result = 0
+
+        def dfs(i):
+            for j in range(nums):
+                if isConnected[i][j] ==1 and j not in visited:
+                    visited.add(j)
+                    dfs(j)
+
+        for i in range(nums):
+            if i not in visited:
+                dfs(i)
+                result +=1
+
+        return result
+     
+ 4.BFS:
+  class Solution:
+    def findCircleNum(self, isConnected: List[List[int]]) -> int:
+        privence =len(isConnected)
+        visited = set()
+        result = 0
+        
+
+        for i in range(privence):
+            if i not in visited:
+                q = collections.deque([i])
+                while q:
+                    j = q.popleft()
+                    visited.add(j)
+                    for k in range(privence):
+                        if isConnected[j][k] == 1 and k not in visited:
+                            q.append(k)
+                result +=1
+        return result 
+5.并查集
+class UnionFind:
+    def __init__(self):
+        self.father = {}
+        # 额外记录集合的数量
+        self.num_of_sets = 0
+    
+    def find(self,x):
+        root = x
+        
+        while self.father[root] != None:
+            root = self.father[root]
+        
+        while x != root:
+            original_father = self.father[x]
+            self.father[x] = root
+            x = original_father
+        
+        return root
+    
+    def merge(self,x,y):
+        root_x,root_y = self.find(x),self.find(y)
+        
+        if root_x != root_y:
+            self.father[root_x] = root_y
+            # 集合的数量-1
+            self.num_of_sets -= 1
+    
+    def add(self,x):
+        if x not in self.father:
+            self.father[x] = None
+            # 集合的数量+1
+            self.num_of_sets += 1
+
+class Solution:
+    def findCircleNum(self, M: List[List[int]]) -> int:
+        uf = UnionFind()
+        for i in range(len(M)):
+            uf.add(i)
+            for j in range(i):
+                if M[i][j]:
+                    uf.merge(i,j)
+        
+        return uf.num_of_sets
+
+
 ```
 
 200
