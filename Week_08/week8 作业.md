@@ -129,6 +129,26 @@ class Solution:
 2. A*
 
 3.基于位运算的的回溯
+
+def solveNQueens(self, n):
+        res = []
+        mask = (1 << n) - 1;
+        queens = [-1] * n
+
+        def dfs(res, ld = 0, row = 0, rd = 0, idx = 0):
+            n = len(queens)
+            if idx == n:
+                res += ['.'*j +'Q'+ '.'*(n-j-1) for j in queens],
+                return
+            pos = mask & ~(ld | row | rd)
+            while pos:
+                p = pos & (~pos + 1)
+                pos -= p
+                queens[idx] = int(math.log(p, 2))
+                dfs(res, (ld + p) << 1, row + p, (rd + p) >> 1, idx + 1)
+
+        dfs(res)
+        return res
 ```
 
 #### [52. N皇后 II](https://leetcode-cn.com/problems/n-queens-ii/)
@@ -350,6 +370,30 @@ class LRUCache:
 1122
 
 ```python
+class Solution:
+    def relativeSortArray(self, arr1: List[int], arr2: List[int]) -> List[int]:
+        res =[]
+        dict1 ={}
+        diff = []
+
+        for num in arr2:     #初始化一个字典，见arr2中的数字做key
+            if num not in dict1:
+                dict1[num] =0
+
+        for num in arr1:   #arr2中的词频
+            if num not in dict1:
+                diff.append(num)
+            else:
+                dict1[num] +=1
+
+        diff.sort()
+
+        for num in arr2:
+            res.extend([num]*dict1[num])
+
+        res.extend(diff)
+
+        return res
 
 ```
 
@@ -463,6 +507,76 @@ class Solution:
 class Solution:
     def addToArrayForm(self, A: List[int], K: int) -> List[int]:
         return map(int,str(int(''.join(map(str,A))) +K))
+
+```
+
+#### [1319. 连通网络的操作次数](https://leetcode-cn.com/problems/number-of-operations-to-make-network-connected/)
+
+```python
+#m个点连接最少需要m-1根线
+#k个点连接最少需要k-1根线
+#此问题就转化为求联通分量的个数
+方法1：
+class Solution:
+    def makeConnected(self, n: int, connections: List[List[int]]) -> int:
+        if len(connections) <n-1:
+            return -1
+        
+        egets = collections.defaultdict(list)
+        for x,y in connections:
+            egets[x].append(y)
+            egets[y].append(x)   #将每个点的联通的点以set的形式表示
+
+        seen  =set()    #表示访问过的点
+        def dfs(u):    #dfs找联通分量
+            seen.add(u)
+            for v in egets[u]:
+                if v not in seen:
+                    dfs(v)
+        ans = 0
+
+        for i in range(n):     #遍历所有的点
+            if  i not in seen:
+                dfs(i)
+                ans +=1    #每次dfs之后，联通分量都+1
+                
+        return ans-1   #最后需要移动的线的个数就是联通分量数减一
+
+
+方法2：
+我们可以使用并查集来得到图中的连通分量数。
+class UnionFind:
+    def __init__(self,n):
+        self.parent  =list(range(n))
+        self.n =n 
+        self.setCount = n
+        self.size = [1]*n
+    def findset(self,x):
+        if self.parent[x] == x:
+            return x
+        self.parent[x] = self.findset(self.parent[x])
+        return self.parent[x]
+    
+    def unite(self,x,y):
+        x, y = self.findset(x),self.findset(y)
+        if x == y:
+            return False
+        if self.size[x] < self.size[y]:
+            x,y = y,x
+        self.parent[y] =x
+        self.size[x] += self.size[y]
+        self.setCount -=1
+        return True
+class Solution:
+    def makeConnected(self, n: int, connections: List[List[int]]) -> int:
+        if len(connections) <n-1:
+            return -1
+        uf = UnionFind(n)
+        for x, y in connections:
+            uf.unite(x, y)	
+        
+        return uf.setCount - 1
+并查集本身就是用来维护连通性的数据结构。如果其包含 n 个节点，那么初始时连通分量数为 n，每成功进行一次合并操作，连通分量数就会减少 1
 
 ```
 
